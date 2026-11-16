@@ -1,0 +1,9 @@
+{
+  "dataset_revision": "9d489de0df0f7215914660b00d478a4e2069e850",
+  "seed": 42,
+  "unique_articles": 3005,
+  "train": 2103,
+  "val": 451,
+  "test": 451,
+  "test_fingerprint": "1c312f3fbfe62465"
+}

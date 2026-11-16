@@ -1,0 +1,10 @@
+numpy
+pandas
+scikit-learn
+matplotlib
+requests
+torch
+transformers
+datasets
+peft
+accelerate
