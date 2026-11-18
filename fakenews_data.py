@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import requests
+from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
 SEED = 42
@@ -120,3 +121,24 @@ def masked_copy(df):
     out = df.copy()
     out["article"] = out["article"].map(mask_shortcuts)
     return out
+
+
+def build_test_sets(test_df):
+    test_sets = {
+        "standard": test_df,
+        "length_matched": length_matched(test_df),
+    }
+    test_sets["masked"] = masked_copy(test_sets["standard"])
+    test_sets["masked_length_matched"] = masked_copy(test_sets["length_matched"])
+    return test_sets
+
+
+def bootstrap_macro_f1(y_true, y_pred, n_resamples=1000):
+    """95% interval for macro F1 from resampling the test articles with replacement."""
+    rng = np.random.RandomState(SEED)
+    y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+    scores = []
+    for _ in range(n_resamples):
+        idx = rng.randint(0, len(y_true), len(y_true))
+        scores.append(f1_score(y_true[idx], y_pred[idx], average="macro"))
+    return np.percentile(scores, [2.5, 97.5])
