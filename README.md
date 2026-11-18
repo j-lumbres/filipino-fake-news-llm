@@ -5,8 +5,12 @@ Fake news classifiers for Filipino report accuracies above 90% on the Fake News 
 from shortcuts, such as the year an article was written, how long it is, or the website it came from.
 Each model is scored on the standard test set and on stress test sets that remove those shortcuts.
 
-**Status.** Work in progress. The classic baselines and stress tests are done. The fine-tuned Tagalog
-RoBERTa and the LoRA-tuned small LLM are next.
+**Summary.** A TF-IDF and logistic regression baseline reaches 0.962 macro F1 on the standard test
+set. With article length, years, names, and platform words removed, the same model scores 0.871, and a
+model retrained on masked text scores 0.911. What remains is mostly register, the conversational style
+of social media posts against the reporting style of tabloids, and not whether a claim is true.
+
+**Status.** Complete for the classic models. The transformer experiments are left as future work.
 
 ## Data
 
@@ -43,7 +47,7 @@ Two harder test sets are built from the same 451 test articles.
 A third set applies both. Macro F1 is the unweighted mean of the F1 scores of the two classes, so
 random guessing scores about 0.50.
 
-## Results so far
+## Results
 
 | Model | Standard | Length-matched | Masked | Masked + length-matched |
 |---|---|---|---|---|
@@ -68,23 +72,41 @@ ni* (said by) and the police report phrase *dakong* (at around, before a time). 
 corpus therefore learns to tell a conversational social media register apart from tabloid reporting.
 That signal is useful, but it is not the same as checking whether a claim is true.
 
-## Next steps
+## Limitations
 
-1. Fine-tune `jcblaise/roberta-tagalog-base` and score it on all four test sets.
-2. Compare zero-shot prompting with LoRA fine-tuning of `Qwen/Qwen2.5-1.5B-Instruct` on the same sets.
-3. Test whether the larger models depend more or less on register cues than the TF-IDF baseline.
+All results come from one corpus, so they may not transfer to other Filipino news sources. The labels
+are confounded with time period and source, because real and fake articles were collected from
+different sites in different years. Masking removes the most visible of these cues, but other
+source-specific traits can remain. The length-matched sets hold only 202 articles. Their 95% intervals
+are about 0.09 wide, so smaller differences between models on those sets should not be read as real.
+
+## Future work
+
+The transformer experiments were planned but not run. Three questions remain open.
+
+1. How does a fine-tuned `jcblaise/roberta-tagalog-base` score on the four test sets?
+2. How does zero-shot prompting of `Qwen/Qwen2.5-1.5B-Instruct` compare with LoRA fine-tuning of the
+   same model?
+3. Do the larger models depend more or less on register cues than the TF-IDF baseline?
 
 ## Repository layout
 
 ```
-fakenews_data.py                      loading, split, length matching, masking
-notebooks/01_data_and_baseline.ipynb  duplicates, split, TF-IDF + LR baseline
-notebooks/02_shortcut_stress_tests.ipynb
-results/                              metrics CSVs and figures
+fakenews_data.py                          loading, split, length matching, masking, bootstrap
+notebooks/01_data_and_baseline.ipynb      duplicates, split, TF-IDF + LR baseline
+notebooks/02_shortcut_stress_tests.ipynb  length-matched and masked test sets
+results/                                  metrics CSVs and figures
 ```
 
-The classic notebooks run on a laptop CPU in under a minute. The transformer notebooks are written
-for a Google Colab T4 GPU.
+## Running the notebooks
+
+Both notebooks run on a laptop CPU in under a minute. The corpus is downloaded on the first run.
+
+```bash
+pip install -r requirements.txt
+```
+
+Then run `01_data_and_baseline.ipynb` and `02_shortcut_stress_tests.ipynb` in order.
 
 ## Reference
 
